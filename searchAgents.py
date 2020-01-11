@@ -648,6 +648,8 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
+
+        # BFS Path to any food (dot) leads to the path to closest food (dot)
         return search.bfs(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
@@ -683,9 +685,10 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         """
         x,y = state
 
+        "*** YOUR CODE HERE ***"
+
+        # Goal state reached if any food is reached
         return self.food[x][y] == True
-        # "*** YOUR CODE HERE ***"
-        # util.raiseNotDefined()
 
 def mazeDistance(point1, point2, gameState):
     """
