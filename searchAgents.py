@@ -648,7 +648,7 @@ class ClosestDotSearchAgent(SearchAgent):
         problem = AnyFoodSearchProblem(gameState)
 
         "*** YOUR CODE HERE ***"
-
+        
         # BFS Path to any food (dot) leads to the path to closest food (dot)
         return search.bfs(problem)
 

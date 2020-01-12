@@ -11,7 +11,7 @@
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
-import time
+
 """
 In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
@@ -86,6 +86,7 @@ def depthFirstSearch(problem):
     print "Is the start a goal?", problem.isGoalState(problem.getStartState())
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
+
     "*** YOUR CODE HERE ***"
 
     # Initializing variables required
@@ -299,7 +300,6 @@ def uniformCostSearch(problem):
         cost = startCost + neighbourCostAddition
         costDict[neighbourPosition] = cost
 
-        print(neighbourPosition, cost)
         # Pushing node in appropriate places
         fringe.push(item = neighbourPosition, priority = cost)
         statesInFringe.append(neighbourPosition)
@@ -313,7 +313,7 @@ def uniformCostSearch(problem):
     # Runs while the fringe is not empty
     while not fringe.isEmpty():
         # Popping least value element of priority queue
-        currentNodePosition = fringe.pop()[0]
+        currentNodePosition = fringe.pop()
         # Storing info of position of current node
         currentNodeCost = costDict[currentNodePosition]
         # Removing from track of states in fringe
@@ -456,7 +456,7 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     # Runs while the fringe is not empty
     while not fringe.isEmpty():
         # Popping least value element of priority queue
-        currentNodePosition = fringe.pop()[0]
+        currentNodePosition = fringe.pop()
 
         # Getting actual path cost till current node
         currentNodeCost = g[currentNodePosition]
@@ -547,7 +547,6 @@ def aStarSearch(problem, heuristic=nullHeuristic):
 
     # Returning path
     return path
-
 
 # Abbreviations
 bfs = breadthFirstSearch
