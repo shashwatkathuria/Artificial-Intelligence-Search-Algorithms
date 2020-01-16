@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -87,7 +87,64 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    from game import Directions
+    n = Directions.NORTH
+    w = Directions.WEST
+    e = Directions.EAST
+    s = Directions.SOUTH
+
+    visited = [problem.getStartState()]
+    path = []
+    print "===="
+    fringe = util.Stack()
+    neighbours = problem.getSuccessors(problem.getStartState())#.sorted(key = lambda element: element[1])
+    parentDict = {}
+    for neighbour in neighbours:
+        fringe.push(neighbour)
+        parentDict[neighbour[0]] = (problem.getStartState(), neighbour[1])
+
+    currentNodePosition = None
+    finalNode = None
+
+    while True:
+        currentNode = fringe.pop()
+        currentNodePosition = currentNode[0]
+        print(currentNodePosition)
+        print(visited)
+        if currentNodePosition in visited:
+            continue
+        if problem.isGoalState(currentNodePosition):
+            finalNode = currentNode
+            break
+        if fringe.isEmpty():
+            break
+        else:
+            visited.append(currentNodePosition)
+            for neighbour in problem.getSuccessors(currentNodePosition):
+                if neighbour[0] in visited:
+                    continue
+                else:
+                    fringe.push(neighbour)
+                    parentDict[neighbour[0]] = (currentNodePosition, neighbour[1])
+
+    print(parentDict)
+    if finalNode == None:
+        return []
+    else:
+        tempNode = finalNode
+        while True:
+            try:
+                parentNode = parentDict[tempNode[0]]
+                tempNode = parentNode
+            except KeyError:
+                break
+            path.append(parentNode[1])
+
+        path.reverse()
+        print("Path", path)
+        print("final Node", finalNode)
+
+    return path
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
