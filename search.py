@@ -11,7 +11,7 @@
 # Student side autograding was added by Brad Miller, Nick Hay, and
 # Pieter Abbeel (pabbeel@cs.berkeley.edu).
 
-
+import time
 """
 In search.py, you will implement generic search algorithms which are called by
 Pacman agents (in searchAgents.py).
@@ -87,39 +87,33 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
     "*** YOUR CODE HERE ***"
-    from game import Directions
-    n = Directions.NORTH
-    w = Directions.WEST
-    e = Directions.EAST
-    s = Directions.SOUTH
 
-    visited = [problem.getStartState()]
+    startState = problem.getStartState()
+    visited = [startState]
     path = []
-    print "===="
     fringe = util.Stack()
-    neighbours = problem.getSuccessors(problem.getStartState())#.sorted(key = lambda element: element[1])
     parentDict = {}
+
+    neighbours = problem.getSuccessors(problem.getStartState())#.sorted(key = lambda element: element[1])
     for neighbour in neighbours:
         fringe.push(neighbour)
-        parentDict[neighbour[0]] = (problem.getStartState(), neighbour[1])
+        parentDict[neighbour[0]] = (startState, neighbour[1])
 
     currentNodePosition = None
     finalNode = None
 
-    while True:
+    while not fringe.isEmpty():
         currentNode = fringe.pop()
         currentNodePosition = currentNode[0]
-        print(currentNodePosition)
-        print(visited)
         if currentNodePosition in visited:
             continue
+        else:
+            visited.append(currentNodePosition)
         if problem.isGoalState(currentNodePosition):
             finalNode = currentNode
             break
-        if fringe.isEmpty():
-            break
         else:
-            visited.append(currentNodePosition)
+
             for neighbour in problem.getSuccessors(currentNodePosition):
                 if neighbour[0] in visited:
                     continue
@@ -127,29 +121,78 @@ def depthFirstSearch(problem):
                     fringe.push(neighbour)
                     parentDict[neighbour[0]] = (currentNodePosition, neighbour[1])
 
-    print(parentDict)
     if finalNode == None:
         return []
     else:
         tempNode = finalNode
         while True:
-            try:
-                parentNode = parentDict[tempNode[0]]
-                tempNode = parentNode
-            except KeyError:
+            if tempNode[0] == startState:
                 break
+            parentNode = parentDict[tempNode[0]]
+            tempNode = parentNode
             path.append(parentNode[1])
 
         path.reverse()
-        print("Path", path)
-        print("final Node", finalNode)
 
     return path
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    startState = problem.getStartState()
+    visited = [startState]
+    path = []
+    fringe = util.Queue()
+    statesInFringe = []
+    parentDict = {}
+
+    neighbours = problem.getSuccessors(startState)
+    for neighbour in neighbours:
+        fringe.push(neighbour)
+        statesInFringe.append(neighbour[0])
+        parentDict[neighbour[0]] = (startState, neighbour[1])
+
+    currentNodePosition = None
+    finalNode = None
+
+    while not fringe.isEmpty():
+        currentNode = fringe.pop()
+        currentNodePosition = currentNode[0]
+        statesInFringe.remove(currentNodePosition)
+
+        if currentNodePosition in visited:
+            continue
+        else:
+            visited.append(currentNodePosition)
+
+        if problem.isGoalState(currentNodePosition):
+            finalNode = currentNode
+            break
+        else:
+
+            for neighbour in problem.getSuccessors(currentNodePosition):
+                if neighbour[0] in visited or neighbour[0] in statesInFringe:
+                    continue
+                else:
+                    fringe.push(neighbour)
+                    statesInFringe.append(neighbour[0])
+                    parentDict[neighbour[0]] = (currentNodePosition, neighbour[1])
+
+
+    if finalNode == None:
+        return []
+    else:
+        tempNode = finalNode
+        while True:
+            if tempNode[0] == startState:
+                break
+            parentNode = parentDict[tempNode[0]]
+            tempNode = parentNode
+            path.append(parentNode[1])
+
+        path.reverse()
+
+    return path
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
