@@ -405,55 +405,87 @@ def cornersHeuristic(state, problem):
     shortest path from the state to a goal of the problem; i.e.  it should be
     admissible (as well as consistent).
     """
-
-    "*** YOUR CODE HERE ***"
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
+    "*** YOUR CODE HERE ***"
+
+    # This function is basically euclidean to first closest corner then
+    # manhattan to successive minimum manhattan corners
+
+    # Helper function for Euclidean Distance
     def euclidean(x1, y1, x2, y2):
+        """Helper function to compute Euclidean distance given all coordinates."""
         return ( ( (x1 - x2) ** 2 ) + ( (y1 - y2) ** 2 ) ) ** 0.5
+
+    # Helper function for Manhattan Distance
     def manhattan(x1, y1, x2, y2):
+        """Helper function to compute Manhattan distance given all coordinates."""
         return abs( x1 - x2 ) + abs( y1 - y2 )
 
-
+    # Returning 0 value if goal state
     if problem.isGoalState(state):
         return 0
 
-
+    # Initializing heuristic value to 0
     hValue = 0
 
+    # Extracting state values
     currentNodePosition = state[0]
     cornersVisited = state[1]
+
+    # List to store unvisited corners and their distances from current node position
     unvisitedCornersAndDistances = []
 
-    # print("++++++++++++")
+    # For all 4 corners
     for i in range(4):
-        corner = corners[i]
-        if cornersVisited[i] == False:
-            unvisitedCornersAndDistances.append([corner, euclidean(corner[0], corner[1], currentNodePosition[0], currentNodePosition[1])])
-    # print(unvisitedCornersAndDistances)
-    # print(currentNodePosition)
-    minElement = min(unvisitedCornersAndDistances, key = lambda element:element[1])
-    # print(minElement)
+        # Getting ith corner position
+        cornerPosition = corners[i]
 
+        # If the corner if not visited
+        if cornersVisited[i] == False:
+            # Adding its position and euclidean distance from current
+            # node to the appropriate list
+            unvisitedCornersAndDistances.append([cornerPosition, euclidean(cornerPosition[0], cornerPosition[1], currentNodePosition[0], currentNodePosition[1])])
+
+
+    # Getting minimum value from unvisited corners with the key as euclidean distance
+    minElement = min(unvisitedCornersAndDistances, key = lambda element : element[1])
+
+    # Adding to heuristic value
     hValue += minElement[1]
 
+    # Removing this corner element from the unvisited list
     unvisitedCornersAndDistances.remove(minElement)
-    # print(unvisitedCornersAndDistances)
+
+    # Now current node is this corner element we just visited
     currentNodePosition = minElement[0]
 
+    # For rest of the unvisited corners we keep on
+    # adding the successive minimum manhattan distances
     while len(unvisitedCornersAndDistances) != 0:
+
+        # For the remaining unvisited corners
         for i in range(len(unvisitedCornersAndDistances)):
-            currElement = unvisitedCornersAndDistances[i]
-            corner = currElement[0]
-            unvisitedCornersAndDistances[i] = [corner, manhattan(corner[0], corner[1], currentNodePosition[0], currentNodePosition[1])]
+            # Getting corner position
+            cornerPosition = unvisitedCornersAndDistances[i][0]
+            # Setting its manhattan distance and modifying the same in list
+            unvisitedCornersAndDistances[i] = [cornerPosition, manhattan(cornerPosition[0], cornerPosition[1], currentNodePosition[0], currentNodePosition[1])]
+
+        # Getting corner with minimum manhattan distance with key as manhattan distance
         minElement = min(unvisitedCornersAndDistances, key = lambda element:element[1])
+
+        # Adding to heuristic value
         hValue += minElement[1]
+
+        # Removing this corner element from the unvisited list
         unvisitedCornersAndDistances.remove(minElement)
+
+        # Now current node is this corner element we just visited
         currentNodePosition = minElement[0]
 
-    return hValue # Default to trivial solution
-
+    # Returning heuristic value
+    return hValue
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
