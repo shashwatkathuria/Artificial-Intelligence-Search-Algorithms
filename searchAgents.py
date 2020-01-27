@@ -288,6 +288,7 @@ class CornersProblem(search.SearchProblem):
         # Please add any code here which you would like to use
         # in initializing the problem
         "*** YOUR CODE HERE ***"
+        # No more initializing required here, so no code
 
     def getStartState(self):
         """
@@ -295,13 +296,17 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        firstCornerVisitedBool = self.startingPosition == self.corners[0]
-        secondCornerVisitedBool = self.startingPosition == self.corners[1]
-        thirdCornerVisitedBool = self.startingPosition == self.corners[2]
-        fourthCornerVisitedBool = self.startingPosition == self.corners[3]
 
+        # Chacking and storing visited bools for respective corners
+        firstCornerVisitedBool = (self.startingPosition == self.corners[0])
+        secondCornerVisitedBool = (self.startingPosition == self.corners[1])
+        thirdCornerVisitedBool = (self.startingPosition == self.corners[2])
+        fourthCornerVisitedBool = (self.startingPosition == self.corners[3])
+
+        # Storing in a tuple
         cornersVisited = (firstCornerVisitedBool, secondCornerVisitedBool, thirdCornerVisitedBool, fourthCornerVisitedBool)
 
+        # Returning tuple of the same alongwith starting position
         return (self.startingPosition, cornersVisited)
 
     def isGoalState(self, state):
@@ -310,8 +315,13 @@ class CornersProblem(search.SearchProblem):
         """
         "*** YOUR CODE HERE ***"
 
+        # Getting the corners visited bool tuple from the state
         cornersVisited = state[1]
-        goalStateBool = cornersVisited[0] and cornersVisited[1] and cornersVisited[2] and cornersVisited[3]
+
+        # goal state if all the corners visited bools are True
+        goalStateBool = (cornersVisited[0] and cornersVisited[1] and cornersVisited[2] and cornersVisited[3])
+
+        # Returning goal state bool value
         return goalStateBool
 
     def getSuccessors(self, state):
@@ -325,28 +335,47 @@ class CornersProblem(search.SearchProblem):
             is the incremental cost of expanding to that successor
         """
 
+        # List for storing successors
         successors = []
+
+        # For each possible direction (action)
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
+
+            # Uncommented all the code snippet, required here
+            # Only change is that x, y = state[0] (currentPosition)
             x,y = state[0]
             dx, dy = Actions.directionToVector(action)
             nextx, nexty = int(x + dx), int(y + dy)
             hitsWall = self.walls[nextx][nexty]
 
+            "*** YOUR CODE HERE ***"
+
+            # If pacman did not hit the wall
             if not hitsWall:
+                # Then we store the new position
                 nextPosition = (nextx, nexty)
 
-                firstCornerVisitedBool = state[1][0] or nextPosition == self.corners[0]
-                secondCornerVisitedBool = state[1][1] or nextPosition == self.corners[1]
-                thirdCornerVisitedBool = state[1][2] or nextPosition == self.corners[2]
-                fourthCornerVisitedBool = state[1][3] or nextPosition == self.corners[3]
-                cost = 1
+                # If corners are already visited or this new position visits any one of them
+                # Storing their bool values
+                firstCornerVisitedBool = (state[1][0] or nextPosition == self.corners[0])
+                secondCornerVisitedBool = (state[1][1] or nextPosition == self.corners[1])
+                thirdCornerVisitedBool = (state[1][2] or nextPosition == self.corners[2])
+                fourthCornerVisitedBool = (state[1][3] or nextPosition == self.corners[3])
+
+                # Storing the values in corners visited bool
                 cornersVisited = (firstCornerVisitedBool, secondCornerVisitedBool, thirdCornerVisitedBool, fourthCornerVisitedBool)
 
+                # Adding cost 1 as only one move, doesn't affect the problem though
+                cost = 1
+
+                # Appending this successor to the list of successors
                 successors.append(((nextPosition, cornersVisited), action, cost))
 
         self._expanded += 1 # DO NOT CHANGE
+
+        # Returning successors
         return successors
 
     def getCostOfActions(self, actions):
