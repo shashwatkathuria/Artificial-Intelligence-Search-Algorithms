@@ -197,7 +197,77 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    startState = problem.getStartState()
+    startCost = 0
+    visited = [startState]
+    path = []
+    fringe = util.PriorityQueue()
+    statesInFringe = []
+    parentDict = {}
+
+    neighbours = problem.getSuccessors(startState)
+    for neighbour in neighbours:
+        # print(neighbour)
+        cost = startCost + neighbour[2]
+        fringe.push(priority = cost, item = neighbour[0])
+        statesInFringe.append(neighbour[0])
+        parentDict[neighbour[0]] = (startState, neighbour[1])
+
+    currentNodePosition = None
+    finalNode = None
+
+    while not fringe.isEmpty():
+        currentNode = fringe.pop()
+        currentNodePosition = currentNode[0]
+        currentNodeCost = currentNode[1]
+        statesInFringe.remove(currentNodePosition)
+
+        # print(currentNode)
+        # assert False
+
+        if currentNodePosition in visited:
+            continue
+        else:
+            visited.append(currentNodePosition)
+
+        if problem.isGoalState(currentNodePosition):
+            finalNode = currentNodePosition
+            break
+        else:
+
+            for neighbour in problem.getSuccessors(currentNodePosition):
+                # print(neighbour)
+                neighbourCostAddition = neighbour[2]
+                if neighbour[0] not in visited and neighbour[0] not in statesInFringe:
+                    totalCost = currentNodeCost + neighbourCostAddition
+                    fringe.push(priority = totalCost, item = neighbour[0])
+                    statesInFringe.append(neighbour[0])
+                    parentDict[neighbour[0]] = (currentNodePosition, neighbour[1])
+                elif neighbour[0] in statesInFringe:
+                    totalCost = currentNodeCost + neighbourCostAddition
+                    flag = fringe.update(item = neighbour[0], priority = totalCost)
+                    if flag == True:
+                        parentDict[neighbour[0]] = (currentNodePosition, neighbour[1])
+
+    # print(parentDict)
+    if finalNode == None:
+        return []
+    else:
+        # print("Final Node : ", finalNode)
+        tempNode = parentDict[finalNode]
+        # print("First Temp Node Print : ", tempNode)
+        path.append(tempNode[1])
+        while True:
+            # print("Again Temp Node Print : ", tempNode)
+            if tempNode[0] == startState:
+                break
+            parentNode = parentDict[tempNode[0]]
+            tempNode = parentNode
+            path.append(tempNode[1])
+
+        path.reverse()
+
+    return path
 
 def nullHeuristic(state, problem=None):
     """
