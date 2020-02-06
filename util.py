@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -18,7 +18,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -185,8 +185,8 @@ class PriorityQueue:
         self.count += 1
 
     def pop(self):
-        (_, _, item) = heapq.heappop(self.heap)
-        return item
+        (priority, _, item) = heapq.heappop(self.heap)
+        return (item, priority)
 
     def isEmpty(self):
         return len(self.heap) == 0
@@ -202,7 +202,7 @@ class PriorityQueue:
                 del self.heap[index]
                 self.heap.append((priority, c, item))
                 heapq.heapify(self.heap)
-                break
+                return True
         else:
             self.push(item, priority)
 
@@ -671,4 +671,3 @@ def unmutePrint():
 
     sys.stdout = _ORIGINAL_STDOUT
     #sys.stderr = _ORIGINAL_STDERR
-
