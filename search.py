@@ -204,11 +204,13 @@ def uniformCostSearch(problem):
     fringe = util.PriorityQueue()
     statesInFringe = []
     parentDict = {}
+    costDict = {}
 
     neighbours = problem.getSuccessors(startState)
     for neighbour in neighbours:
         # print(neighbour)
         cost = startCost + neighbour[2]
+        costDict[neighbour[0]] = cost
         fringe.push(priority = cost, item = neighbour[0])
         statesInFringe.append(neighbour[0])
         parentDict[neighbour[0]] = (startState, neighbour[1])
@@ -219,7 +221,7 @@ def uniformCostSearch(problem):
     while not fringe.isEmpty():
         currentNode = fringe.pop()
         currentNodePosition = currentNode[0]
-        currentNodeCost = currentNode[1]
+        currentNodeCost = costDict[currentNodePosition]
         statesInFringe.remove(currentNodePosition)
 
         # print(currentNode)
@@ -240,13 +242,15 @@ def uniformCostSearch(problem):
                 neighbourCostAddition = neighbour[2]
                 if neighbour[0] not in visited and neighbour[0] not in statesInFringe:
                     totalCost = currentNodeCost + neighbourCostAddition
+                    costDict[neighbour[0]] = totalCost
                     fringe.push(priority = totalCost, item = neighbour[0])
                     statesInFringe.append(neighbour[0])
                     parentDict[neighbour[0]] = (currentNodePosition, neighbour[1])
                 elif neighbour[0] in statesInFringe:
                     totalCost = currentNodeCost + neighbourCostAddition
                     flag = fringe.update(item = neighbour[0], priority = totalCost)
-                    if flag == True:
+                    if totalCost < costDict[neighbour[0]]:
+                        costDict[neighbour[0]] = totalCost
                         parentDict[neighbour[0]] = (currentNodePosition, neighbour[1])
 
     # print(parentDict)
@@ -279,7 +283,114 @@ def nullHeuristic(state, problem=None):
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+
+    startState = problem.getStartState()
+    startHeuristic = heuristic(startState, problem)
+    startCost = 0
+    visited = [startState]
+    path = []
+    g = {}
+    h = {}
+    fringe = util.PriorityQueueWithFunction(priorityFunction = lambda item : g[item] + h[item])
+    statesInFringe = []
+    parentDict = {}
+    # print("++++++++++++++++++++++++++")
+    # print("Start State       : ", startState)
+    # print("Start Cost       g: ", startCost)
+    # print("Start Heuristic  h: ", startHeuristic)
+
+    neighbours = problem.getSuccessors(startState)
+    for neighbour in neighbours:
+        # print("Start State Neighbour : ", neighbour)
+        neighbourState = neighbour[0]
+        gValue = startCost + neighbour[2]
+        hValue = heuristic(neighbourState, problem)
+        totalCost = gValue + hValue
+
+        h[neighbourState] = hValue
+        g[neighbourState] = gValue
+
+        # print("Neighbour Till Now Cost  g: ", gValue)
+        # print("Neighbour Heuristic Cost h: ", hValue)
+        # print("Neighbour Total Cost     f: ", totalCost)
+
+        fringe.push(item = neighbourState)
+        statesInFringe.append(neighbourState)
+        parentDict[neighbourState] = (startState, neighbour[1])
+
+    currentNodePosition = None
+    finalNode = None
+
+    while not fringe.isEmpty():
+        currentNode = fringe.pop()
+        currentNodePosition = currentNode[0]
+        currentNodeCost = g[currentNodePosition]
+
+        try:
+            statesInFringe.remove(currentNodePosition)
+        except:
+            pass
+
+        # print("----NEW ITERATION-----")
+        # print("Current Node", currentNodePosition)
+        # print("Current Node Saved Priority: ", currentNode[1])
+        # assert False
+
+        if currentNodePosition in visited:
+            continue
+        else:
+            visited.append(currentNodePosition)
+
+        if problem.isGoalState(currentNodePosition):
+            finalNode = currentNodePosition
+            break
+        else:
+
+            for neighbour in problem.getSuccessors(currentNodePosition):
+                # print(neighbour)
+                neighbourState = neighbour[0]
+
+                neighbourCostAddition = neighbour[2]
+                # print("Edge Cost : ", neighbourCostAddition)
+                # print("Current Node Cost", currentNodeCost)
+                gValue = currentNodeCost + neighbourCostAddition
+                hValue = heuristic(neighbourState, problem)
+                h[neighbourState] = hValue
+                # print("H Value:", h[neighbourState])
+                if neighbourState not in visited and neighbourState not in statesInFringe:
+                    # print("Newly Added")
+                    g[neighbourState] = gValue
+                    # print("New g Value", g[neighbourState])
+                    fringe.push(item = neighbourState)
+                    statesInFringe.append(neighbourState)
+                    parentDict[neighbourState] = (currentNodePosition, neighbour[1])
+                elif neighbourState in statesInFringe:
+                    # print("Trying to modify")
+                    if gValue <= g[neighbourState]:
+                        g[neighbourState] = gValue
+                        fringe.push(item = neighbourState)
+                        # print("Modified with new g value as ", g[neighbourState])
+                        parentDict[neighbourState] = (currentNodePosition, neighbour[1])
+
+    # print(parentDict)
+    if finalNode == None:
+        return []
+    else:
+        # print("Final Node : ", finalNode)
+        tempNode = parentDict[finalNode]
+        # print("First Temp Node Print : ", tempNode)
+        path.append(tempNode[1])
+        while True:
+            # print("Again Temp Node Print : ", tempNode)
+            if tempNode[0] == startState:
+                break
+            parentNode = parentDict[tempNode[0]]
+            tempNode = parentNode
+            path.append(tempNode[1])
+
+        path.reverse()
+
+    return path
 
 
 # Abbreviations
