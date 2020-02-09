@@ -4,7 +4,7 @@
 # educational purposes provided that (1) you do not distribute or publish
 # solutions, (2) you retain this notice, and (3) you provide clear
 # attribution to UC Berkeley, including a link to http://ai.berkeley.edu.
-# 
+#
 # Attribution Information: The Pacman AI projects were developed at UC Berkeley.
 # The core projects and autograders were primarily created by John DeNero
 # (denero@cs.berkeley.edu) and Dan Klein (klein@cs.berkeley.edu).
@@ -295,14 +295,24 @@ class CornersProblem(search.SearchProblem):
         space)
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        firstCornerVisitedBool = self.startingPosition == self.corners[0]
+        secondCornerVisitedBool = self.startingPosition == self.corners[1]
+        thirdCornerVisitedBool = self.startingPosition == self.corners[2]
+        fourthCornerVisitedBool = self.startingPosition == self.corners[3]
+
+        cornersVisited = (firstCornerVisitedBool, secondCornerVisitedBool, thirdCornerVisitedBool, fourthCornerVisitedBool)
+
+        return (self.startingPosition, cornersVisited)
 
     def isGoalState(self, state):
         """
         Returns whether this search state is a goal state of the problem.
         """
         "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+
+        cornersVisited = state[1]
+        goalStateBool = cornersVisited[0] and cornersVisited[1] and cornersVisited[2] and cornersVisited[3]
+        return goalStateBool
 
     def getSuccessors(self, state):
         """
@@ -319,12 +329,22 @@ class CornersProblem(search.SearchProblem):
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
             # Add a successor state to the successor list if the action is legal
             # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
+            x,y = state[0]
+            dx, dy = Actions.directionToVector(action)
+            nextx, nexty = int(x + dx), int(y + dy)
+            hitsWall = self.walls[nextx][nexty]
 
-            "*** YOUR CODE HERE ***"
+            if not hitsWall:
+                nextPosition = (nextx, nexty)
+
+                firstCornerVisitedBool = state[1][0] or nextPosition == self.corners[0]
+                secondCornerVisitedBool = state[1][1] or nextPosition == self.corners[1]
+                thirdCornerVisitedBool = state[1][2] or nextPosition == self.corners[2]
+                fourthCornerVisitedBool = state[1][3] or nextPosition == self.corners[3]
+                cost = 1
+                cornersVisited = (firstCornerVisitedBool, secondCornerVisitedBool, thirdCornerVisitedBool, fourthCornerVisitedBool)
+
+                successors.append(((nextPosition, cornersVisited), action, cost))
 
         self._expanded += 1 # DO NOT CHANGE
         return successors
@@ -356,11 +376,55 @@ def cornersHeuristic(state, problem):
     shortest path from the state to a goal of the problem; i.e.  it should be
     admissible (as well as consistent).
     """
+
+    "*** YOUR CODE HERE ***"
     corners = problem.corners # These are the corner coordinates
     walls = problem.walls # These are the walls of the maze, as a Grid (game.py)
 
-    "*** YOUR CODE HERE ***"
-    return 0 # Default to trivial solution
+    def euclidean(x1, y1, x2, y2):
+        return ( ( (x1 - x2) ** 2 ) + ( (y1 - y2) ** 2 ) ) ** 0.5
+    def manhattan(x1, y1, x2, y2):
+        return abs( x1 - x2 ) + abs( y1 - y2 )
+
+
+    if problem.isGoalState(state):
+        return 0
+
+
+    hValue = 0
+
+    currentNodePosition = state[0]
+    cornersVisited = state[1]
+    unvisitedCornersAndDistances = []
+
+    print("++++++++++++")
+    for i in range(4):
+        corner = corners[i]
+        if cornersVisited[i] == False:
+            unvisitedCornersAndDistances.append([corner, euclidean(corner[0], corner[1], currentNodePosition[0], currentNodePosition[1])])
+    print(unvisitedCornersAndDistances)
+    print(currentNodePosition)
+    minElement = min(unvisitedCornersAndDistances, key = lambda element:element[1])
+    print(minElement)
+
+    hValue += minElement[1]
+
+    unvisitedCornersAndDistances.remove(minElement)
+    print(unvisitedCornersAndDistances)
+    currentNodePosition = minElement[0]
+
+    while len(unvisitedCornersAndDistances) != 0:
+        for i in range(len(unvisitedCornersAndDistances)):
+            currElement = unvisitedCornersAndDistances[i]
+            corner = currElement[0]
+            unvisitedCornersAndDistances[i] = [corner, manhattan(corner[0], corner[1], currentNodePosition[0], currentNodePosition[1])]
+        minElement = min(unvisitedCornersAndDistances, key = lambda element:element[1])
+        hValue += minElement[1]
+        unvisitedCornersAndDistances.remove(minElement)
+        currentNodePosition = minElement[0]
+
+    return hValue # Default to trivial solution
+
 
 class AStarCornersAgent(SearchAgent):
     "A SearchAgent for FoodSearchProblem using A* and your foodHeuristic"
