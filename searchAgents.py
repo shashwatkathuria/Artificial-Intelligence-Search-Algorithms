@@ -397,20 +397,20 @@ def cornersHeuristic(state, problem):
     cornersVisited = state[1]
     unvisitedCornersAndDistances = []
 
-    print("++++++++++++")
+    # print("++++++++++++")
     for i in range(4):
         corner = corners[i]
         if cornersVisited[i] == False:
             unvisitedCornersAndDistances.append([corner, euclidean(corner[0], corner[1], currentNodePosition[0], currentNodePosition[1])])
-    print(unvisitedCornersAndDistances)
-    print(currentNodePosition)
+    # print(unvisitedCornersAndDistances)
+    # print(currentNodePosition)
     minElement = min(unvisitedCornersAndDistances, key = lambda element:element[1])
-    print(minElement)
+    # print(minElement)
 
     hValue += minElement[1]
 
     unvisitedCornersAndDistances.remove(minElement)
-    print(unvisitedCornersAndDistances)
+    # print(unvisitedCornersAndDistances)
     currentNodePosition = minElement[0]
 
     while len(unvisitedCornersAndDistances) != 0:
@@ -517,8 +517,77 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
-    "*** YOUR CODE HERE ***"
-    return 0
+
+    def euclidean(x1, y1, x2, y2):
+        return ( ( (x1 - x2) ** 2 ) + ( (y1 - y2) ** 2 ) ) ** 0.5
+    def manhattan(x1, y1, x2, y2):
+        return abs( x1 - x2 ) + abs( y1 - y2 )
+
+    if problem.isGoalState(state):
+        return 0
+
+
+    currentPositon = position
+    hValue = 0
+    foodCoordinatesList = foodGrid.asList()
+    while len(foodCoordinatesList) != 0:
+        print("+++++++++++++")
+        print("Food coordinates list : ", foodCoordinatesList)
+        x1 = currentPositon[0]
+        y1 = currentPositon[1]
+        possibilities = {}
+        for foodPosition in foodCoordinatesList:
+            x2 = foodPosition[0]
+            y2 = foodPosition[1]
+            eucValue = euclidean(x1, y1, x2, y2)
+            # print(x1, y1, x2, y2, eucValue)
+            possibilities[(x2, y2)] = eucValue
+
+        print("----------")
+        print("Possibilities Dict : ", possibilities)
+
+        minPosition = min(possibilities, key=possibilities.get)
+
+        sum = 0
+        minPositions = []
+        for key in possibilities:
+            if possibilities[key] == possibilities[minPosition]:
+                minPositions.append(key)
+
+        if len(minPositions) > 1:
+            print(minPositions)
+            tiesDict = {}
+            for position in minPositions:
+                x1 = position[0]
+                y1 = position[1]
+                dist = 0
+                for foodPosition in foodCoordinatesList:
+                    x2 = foodPosition[0]
+                    y2 = foodPosition[1]
+                    dist = max(dist, mazeDistance((x1, y1), (x2, y2), problem.startingGameState))
+                tiesDict[position] = dist
+            print("Ties Dict", tiesDict)
+            tiesDictMax = max(tiesDict, key=tiesDict.get)
+            print("Ties Dict Max ", tiesDictMax)
+            minPosition = tiesDictMax
+
+
+        print("Min Position       : ", minPosition)
+        print("Min Position Value : ", possibilities[minPosition])
+        print("H value earlier    : ", hValue)
+        hValue += possibilities[minPosition]
+        print("H value now        : ", hValue)
+        print("Current Position earlier:", currentPositon)
+        currentPositon = minPosition
+        print("Current Position now:", currentPositon)
+        foodCoordinatesList.remove(minPosition)
+        # print(minPosition, currentPositon, hValue, possibilities, foodCoordinatesList)
+
+    return hValue
+
+
+
+
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
