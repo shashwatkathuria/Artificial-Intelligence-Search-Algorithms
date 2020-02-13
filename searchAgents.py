@@ -578,26 +578,46 @@ def foodHeuristic(state, problem):
     problem.heuristicInfo['wallCount']
     """
     position, foodGrid = state
+    "*** YOUR CODE HERE ***"
 
+    # Returning 0 if goal state
     if problem.isGoalState(state):
         return 0
 
+    # Storing starting game state
     gameState = problem.startingGameState
+
+    # Storing current position
     currentPositon = position
-    hValue = 0
-    foodCoordinatesList = foodGrid.asList()
     x1 = currentPositon[0]
     y1 = currentPositon[1]
+
+    # Initializing heuristic value
+    hValue = 0
+
+    # Getting list of food coordinates
+    foodCoordinatesList = foodGrid.asList()
+
+    # Variable to store maximum maze distance food
     maxDistFood = 0
+    # For all food positions
     for foodPosition in foodCoordinatesList:
+        # Storing coordinates of current food position
         x2 = foodPosition[0]
         y2 = foodPosition[1]
+
+        # Calculating maze distance
         distValue = mazeDistance((x1, y1), (x2, y2), gameState)
+
+        # Calculating the maximum of the dist and current max dist
+        # and storing
         maxDistFood = max(maxDistFood, distValue)
+
+    # Storing heuristic value
     hValue = maxDistFood
+
+    # Returning heuristic value
     return hValue
-
-
 
 class ClosestDotSearchAgent(SearchAgent):
     "Search for all food using a sequence of searches"
