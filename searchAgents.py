@@ -518,74 +518,23 @@ def foodHeuristic(state, problem):
     """
     position, foodGrid = state
 
-    def euclidean(x1, y1, x2, y2):
-        return ( ( (x1 - x2) ** 2 ) + ( (y1 - y2) ** 2 ) ) ** 0.5
-    def manhattan(x1, y1, x2, y2):
-        return abs( x1 - x2 ) + abs( y1 - y2 )
-
     if problem.isGoalState(state):
         return 0
 
-
+    gameState = problem.startingGameState
     currentPositon = position
     hValue = 0
     foodCoordinatesList = foodGrid.asList()
-    while len(foodCoordinatesList) != 0:
-        print("+++++++++++++")
-        print("Food coordinates list : ", foodCoordinatesList)
-        x1 = currentPositon[0]
-        y1 = currentPositon[1]
-        possibilities = {}
-        for foodPosition in foodCoordinatesList:
-            x2 = foodPosition[0]
-            y2 = foodPosition[1]
-            eucValue = euclidean(x1, y1, x2, y2)
-            # print(x1, y1, x2, y2, eucValue)
-            possibilities[(x2, y2)] = eucValue
-
-        print("----------")
-        print("Possibilities Dict : ", possibilities)
-
-        minPosition = min(possibilities, key=possibilities.get)
-
-        sum = 0
-        minPositions = []
-        for key in possibilities:
-            if possibilities[key] == possibilities[minPosition]:
-                minPositions.append(key)
-
-        if len(minPositions) > 1:
-            print(minPositions)
-            tiesDict = {}
-            for position in minPositions:
-                x1 = position[0]
-                y1 = position[1]
-                dist = 0
-                for foodPosition in foodCoordinatesList:
-                    x2 = foodPosition[0]
-                    y2 = foodPosition[1]
-                    dist = max(dist, mazeDistance((x1, y1), (x2, y2), problem.startingGameState))
-                tiesDict[position] = dist
-            print("Ties Dict", tiesDict)
-            tiesDictMax = max(tiesDict, key=tiesDict.get)
-            print("Ties Dict Max ", tiesDictMax)
-            minPosition = tiesDictMax
-
-
-        print("Min Position       : ", minPosition)
-        print("Min Position Value : ", possibilities[minPosition])
-        print("H value earlier    : ", hValue)
-        hValue += possibilities[minPosition]
-        print("H value now        : ", hValue)
-        print("Current Position earlier:", currentPositon)
-        currentPositon = minPosition
-        print("Current Position now:", currentPositon)
-        foodCoordinatesList.remove(minPosition)
-        # print(minPosition, currentPositon, hValue, possibilities, foodCoordinatesList)
-
+    x1 = currentPositon[0]
+    y1 = currentPositon[1]
+    maxDistFood = 0
+    for foodPosition in foodCoordinatesList:
+        x2 = foodPosition[0]
+        y2 = foodPosition[1]
+        distValue = mazeDistance((x1, y1), (x2, y2), gameState)
+        maxDistFood = max(maxDistFood, distValue)
+    hValue = maxDistFood
     return hValue
-
-
 
 
 
