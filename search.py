@@ -88,52 +88,88 @@ def depthFirstSearch(problem):
     """
     "*** YOUR CODE HERE ***"
 
+    # Initializing variables required
     startState = problem.getStartState()
     visited = [startState]
     path = []
+
+    # For DFS, LIFO - Stack
     fringe = util.Stack()
+
+    # To store parent info for backtracking
     parentDict = {}
 
+    # Starting the problem with the neighbours of the start state
     neighbours = problem.getSuccessors(problem.getStartState())#.sorted(key = lambda element: element[1])
-    for neighbour in neighbours:
-        fringe.push(neighbour)
-        parentDict[neighbour[0]] = (startState, neighbour[1])
 
+    # Pushing neighbours and appropriate info into dict
+    for neighbour in neighbours:
+        neighbourPosition = neighbour[0]
+        edgeInfo = neighbour[1]
+        fringe.push(neighbour)
+        parentDict[neighbourPosition] = (startState, edgeInfo)
+
+    # For storing current node position and final node
     currentNodePosition = None
     finalNode = None
 
+    # Runs while the fringe is not empty
     while not fringe.isEmpty():
+        # Popping topmost element of stack
         currentNode = fringe.pop()
+        # Storing info of position of current node
         currentNodePosition = currentNode[0]
+
+        # Skipping to next iteration if already visited
         if currentNodePosition in visited:
             continue
+        # Otherwise appending to visited list
         else:
             visited.append(currentNodePosition)
+
+        # Breaking out of while loop if goal state
         if problem.isGoalState(currentNodePosition):
+            # Storing goal state for further processing
             finalNode = currentNode
             break
+        # Otherwise processing neighbours into fringe
         else:
 
+            # For all neighbours of the current node
             for neighbour in problem.getSuccessors(currentNodePosition):
-                if neighbour[0] in visited:
+                neighbourPosition = neighbour[0]
+                edgeInfo = neighbour[1]
+                # Skipping to next iteration if already visited
+                if neighbourPosition in visited:
                     continue
+                # Else pushing into fringe and parent dict with appropriate info
                 else:
                     fringe.push(neighbour)
-                    parentDict[neighbour[0]] = (currentNodePosition, neighbour[1])
+                    parentDict[neighbourPosition] = (currentNodePosition, edgeInfo)
 
+    # Returning empty path if no final state is found
     if finalNode == None:
         return []
+    # Else backtracking the path found till final node
     else:
+
+        # Temporary node to store backtracking iteration data
         tempNode = finalNode
         while True:
-            if tempNode[0] == startState:
+            tempNodePosition = tempNode[0]
+            if tempNodePosition == startState:
                 break
-            parentNode = parentDict[tempNode[0]]
+            # Updating temporary node to be its parent
+            parentNode = parentDict[tempNodePosition]
+            backtrackEdgeInfo = parentNode[1]
             tempNode = parentNode
-            path.append(parentNode[1])
+            # Storing backtrack edge info
+            path.append(backtrackEdgeInfo)
 
+        # Reversing to get the backtracked path from start to final node
         path.reverse()
 
+    # Returning path
     return path
 
 def breadthFirstSearch(problem):
