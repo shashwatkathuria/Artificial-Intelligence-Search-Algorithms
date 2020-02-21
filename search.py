@@ -157,6 +157,7 @@ def depthFirstSearch(problem):
         tempNode = finalNode
         while True:
             tempNodePosition = tempNode[0]
+            # Breaking if start state reached
             if tempNodePosition == startState:
                 break
             # Updating temporary node to be its parent
@@ -175,59 +176,95 @@ def depthFirstSearch(problem):
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
     "*** YOUR CODE HERE ***"
+
+    # Initializing variables required
     startState = problem.getStartState()
     visited = [startState]
     path = []
+
+    # For BFS, FIFO - Queue
     fringe = util.Queue()
+    # To keep track of the states in the fringe
     statesInFringe = []
+    # To store parent info for backtracking
     parentDict = {}
 
+    # Starting the problem with the neighbours of the start state
     neighbours = problem.getSuccessors(startState)
-    for neighbour in neighbours:
-        fringe.push(neighbour)
-        statesInFringe.append(neighbour[0])
-        parentDict[neighbour[0]] = (startState, neighbour[1])
 
+    # Pushing neighbours and appropriate info into dict
+    for neighbour in neighbours:
+        neighbourPosition = neighbour[0]
+        edgeInfo = neighbour[1]
+        fringe.push(neighbour)
+        statesInFringe.append(neighbourPosition)
+        parentDict[neighbourPosition] = (startState, edgeInfo)
+
+    # For storing current node position and final node
     currentNodePosition = None
     finalNode = None
 
+    # Runs while the fringe is not empty
     while not fringe.isEmpty():
+        # Popping frontmost element of queue
         currentNode = fringe.pop()
+        # Storing info of position of current node
         currentNodePosition = currentNode[0]
+        # Removing from track of states in fringe
         statesInFringe.remove(currentNodePosition)
 
+        # Skipping to next iteration if already visited
         if currentNodePosition in visited:
             continue
+        # Otherwise appending to visited list
         else:
             visited.append(currentNodePosition)
 
+        # Breaking out of while loop if goal state
         if problem.isGoalState(currentNodePosition):
+            # Storing goal state for further processing
             finalNode = currentNode
             break
+        # Otherwise processing neighbours into fringe
         else:
 
+            # For all neighbours of the current node
             for neighbour in problem.getSuccessors(currentNodePosition):
-                if neighbour[0] in visited or neighbour[0] in statesInFringe:
+                neighbourPosition = neighbour[0]
+                edgeInfo = neighbour[1]
+                # Skipping to next iteration if already visited or in fringe
+                if neighbourPosition in visited or neighbourPosition in statesInFringe:
                     continue
+                # Else pushing into fringe, states in fringe and parent dict with appropriate info
                 else:
                     fringe.push(neighbour)
-                    statesInFringe.append(neighbour[0])
-                    parentDict[neighbour[0]] = (currentNodePosition, neighbour[1])
+                    statesInFringe.append(neighbourPosition)
+                    parentDict[neighbourPosition] = (currentNodePosition, edgeInfo)
 
-
+    # Returning empty path if no final state is found
     if finalNode == None:
         return []
+    # Else backtracking the path found till final node
     else:
+
+        # Temporary node to store backtracking iteration data
         tempNode = finalNode
         while True:
-            if tempNode[0] == startState:
+            tempNodePosition = tempNode[0]
+            # Breaking if start state reached
+            if tempNodePosition == startState:
                 break
-            parentNode = parentDict[tempNode[0]]
+            # Updating temporary node to be its parent
+            parentNode = parentDict[tempNodePosition]
+            backtrackEdgeInfo = parentNode[1]
             tempNode = parentNode
+            # Storing backtrack edge info
             path.append(parentNode[1])
 
+        # Reversing to get the backtracked path from start to final node
         path.reverse()
 
+    # Returning path
     return path
 
 def uniformCostSearch(problem):
