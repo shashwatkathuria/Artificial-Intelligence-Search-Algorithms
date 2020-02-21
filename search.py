@@ -259,7 +259,7 @@ def breadthFirstSearch(problem):
             backtrackEdgeInfo = parentNode[1]
             tempNode = parentNode
             # Storing backtrack edge info
-            path.append(parentNode[1])
+            path.append(backtrackEdgeInfo)
 
         # Reversing to get the backtracked path from start to final node
         path.reverse()
@@ -270,80 +270,129 @@ def breadthFirstSearch(problem):
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
     "*** YOUR CODE HERE ***"
+
+    # Initializing variables required
     startState = problem.getStartState()
     startCost = 0
     visited = [startState]
     path = []
+
+    # For UCS, Priority Queue
     fringe = util.PriorityQueue()
+    # To keep track of the states in the fringe
     statesInFringe = []
+    # To store parent info for backtracking
     parentDict = {}
+    # To keep track of cost of path till visited node
     costDict = {}
 
+    # Starting the problem with the neighbours of the start state
     neighbours = problem.getSuccessors(startState)
-    for neighbour in neighbours:
-        # print(neighbour)
-        cost = startCost + neighbour[2]
-        costDict[neighbour[0]] = cost
-        fringe.push(priority = cost, item = neighbour[0])
-        statesInFringe.append(neighbour[0])
-        parentDict[neighbour[0]] = (startState, neighbour[1])
 
+    # Pushing neighbours and appropriate info into dict
+    for neighbour in neighbours:
+        neighbourPosition = neighbour[0]
+        edgeInfo = neighbour[1]
+        neighbourCostAddition = neighbour[2]
+
+        # Saving cost of path till now in cost dict
+        cost = startCost + neighbourCostAddition
+        costDict[neighbourPosition] = cost
+
+        print(neighbourPosition, cost)
+        # Pushing node in appropriate places
+        fringe.push(item = neighbourPosition, priority = cost)
+        statesInFringe.append(neighbourPosition)
+        # Saving parent node for backtracking info
+        parentDict[neighbourPosition] = (startState, edgeInfo)
+
+    # For storing current node position and final node
     currentNodePosition = None
     finalNode = None
 
+    # Runs while the fringe is not empty
     while not fringe.isEmpty():
-        currentNode = fringe.pop()
-        currentNodePosition = currentNode[0]
+        # Popping least value element of priority queue
+        currentNodePosition = fringe.pop()[0]
+        # Storing info of position of current node
         currentNodeCost = costDict[currentNodePosition]
+        # Removing from track of states in fringe
         statesInFringe.remove(currentNodePosition)
 
-        # print(currentNode)
-        # assert False
-
+        # Skipping to next iteration if already visited
         if currentNodePosition in visited:
             continue
+        # Otherwise appending to visited list
         else:
             visited.append(currentNodePosition)
 
+        # Breaking out of while loop if goal state
         if problem.isGoalState(currentNodePosition):
+            # Storing goal state for further processing
             finalNode = currentNodePosition
             break
+        # Otherwise processing neighbours into fringe
         else:
 
+            # For all neighbours of the current node
             for neighbour in problem.getSuccessors(currentNodePosition):
-                # print(neighbour)
+                neighbourPosition = neighbour[0]
+                edgeInfo = neighbour[1]
                 neighbourCostAddition = neighbour[2]
-                if neighbour[0] not in visited and neighbour[0] not in statesInFringe:
-                    totalCost = currentNodeCost + neighbourCostAddition
-                    costDict[neighbour[0]] = totalCost
-                    fringe.push(priority = totalCost, item = neighbour[0])
-                    statesInFringe.append(neighbour[0])
-                    parentDict[neighbour[0]] = (currentNodePosition, neighbour[1])
-                elif neighbour[0] in statesInFringe:
-                    totalCost = currentNodeCost + neighbourCostAddition
-                    flag = fringe.update(item = neighbour[0], priority = totalCost)
-                    if totalCost < costDict[neighbour[0]]:
-                        costDict[neighbour[0]] = totalCost
-                        parentDict[neighbour[0]] = (currentNodePosition, neighbour[1])
 
-    # print(parentDict)
+                # Adding neighbour node not if visited and not in fringe
+                if neighbourPosition not in visited and neighbourPosition not in statesInFringe:
+                    # Calculating total path cost till neighbour node
+                    totalCost = currentNodeCost + neighbourCostAddition
+                    # Storing total path cost in cost dict
+                    costDict[neighbourPosition] = totalCost
+
+                    # Pushing node in appropriate places
+                    fringe.push(item = neighbourPosition, priority = totalCost)
+                    statesInFringe.append(neighbourPosition)
+                    # Saving parent node for backtracking info
+                    parentDict[neighbourPosition] = (currentNodePosition, edgeInfo)
+
+                # Otherwise if the neighbour node is already in the fringe
+                elif neighbourPosition in statesInFringe:
+
+                    # Calculating new cost
+                    totalCost = currentNodeCost + neighbourCostAddition
+                    # Passing new cost value to update function to appropriately
+                    # update if required
+                    fringe.update(item = neighbourPosition, priority = totalCost)
+
+                    # Updating values if the new value is lesser than the old value
+                    if totalCost < costDict[neighbourPosition]:
+                        costDict[neighbourPosition] = totalCost
+                        parentDict[neighbourPosition] = (currentNodePosition, edgeInfo)
+
+    # Returning empty path if no final state is found
     if finalNode == None:
         return []
+    # Else backtracking the path found till final node
     else:
-        # print("Final Node : ", finalNode)
+        # Temporary node to store backtracking iteration data
+        # Getting parent of final node
         tempNode = parentDict[finalNode]
-        # print("First Temp Node Print : ", tempNode)
+        # Storing into backtrack edge into path
         path.append(tempNode[1])
         while True:
-            # print("Again Temp Node Print : ", tempNode)
-            if tempNode[0] == startState:
+            tempNodePosition = tempNode[0]
+            # Breaking if start state reached
+            if tempNodePosition == startState:
                 break
-            parentNode = parentDict[tempNode[0]]
+            # Updating temporary node to be its parent
+            parentNode = parentDict[tempNodePosition]
+            backtrackEdgeInfo = parentNode[1]
             tempNode = parentNode
-            path.append(tempNode[1])
+            # Storing backtrack edge info
+            path.append(backtrackEdgeInfo)
 
+        # Reversing to get the backtracked path from start to final node
         path.reverse()
 
+    # Returning path
     return path
 
 def nullHeuristic(state, problem=None):
