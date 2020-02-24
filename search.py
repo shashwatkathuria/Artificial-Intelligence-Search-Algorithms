@@ -406,112 +406,146 @@ def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
     "*** YOUR CODE HERE ***"
 
+    # Initializing variables required
     startState = problem.getStartState()
     startHeuristic = heuristic(startState, problem)
     startCost = 0
     visited = [startState]
     path = []
+
+    # Dicts for storing values of functions g and h
+    # g = total cost till from starting till current node
+    # h = heuristic cost till from current node till final node
     g = {}
     h = {}
+
+    # For UCS, Priority Queue With Function (f = g + h)
     fringe = util.PriorityQueueWithFunction(priorityFunction = lambda item : g[item] + h[item])
+    # To keep track of the states in the fringe
     statesInFringe = []
+    # To store parent info for backtracking
     parentDict = {}
-    # print("++++++++++++++++++++++++++")
-    # print("Start State       : ", startState)
-    # print("Start Cost       g: ", startCost)
-    # print("Start Heuristic  h: ", startHeuristic)
 
+    # Starting the problem with the neighbours of the start state
     neighbours = problem.getSuccessors(startState)
+
+    # Pushing neighbours and appropriate info into dict
     for neighbour in neighbours:
-        # print("Start State Neighbour : ", neighbour)
-        neighbourState = neighbour[0]
-        gValue = startCost + neighbour[2]
-        hValue = heuristic(neighbourState, problem)
-        totalCost = gValue + hValue
+        neighbourPosition = neighbour[0]
+        edgeInfo = neighbour[1]
+        neighbourCostAddition = neighbour[2]
 
-        h[neighbourState] = hValue
-        g[neighbourState] = gValue
+        # Getting g and h values of neighbour node
+        gValue = startCost + neighbourCostAddition
+        hValue = heuristic(neighbourPosition, problem)
 
-        # print("Neighbour Till Now Cost  g: ", gValue)
-        # print("Neighbour Heuristic Cost h: ", hValue)
-        # print("Neighbour Total Cost     f: ", totalCost)
+        # Storing g and h values of neighbour node into dicts
+        h[neighbourPosition] = hValue
+        g[neighbourPosition] = gValue
 
-        fringe.push(item = neighbourState)
-        statesInFringe.append(neighbourState)
-        parentDict[neighbourState] = (startState, neighbour[1])
+        # Pushing node in appropriate places
+        fringe.push(item = neighbourPosition)
+        statesInFringe.append(neighbourPosition)
+        # Saving parent node for backtracking info
+        parentDict[neighbourPosition] = (startState, edgeInfo)
 
+    # For storing current node position and final node
     currentNodePosition = None
     finalNode = None
 
+    # Runs while the fringe is not empty
     while not fringe.isEmpty():
-        currentNode = fringe.pop()
-        currentNodePosition = currentNode[0]
+        # Popping least value element of priority queue
+        currentNodePosition = fringe.pop()[0]
+
+        # Getting actual path cost till current node
         currentNodeCost = g[currentNodePosition]
 
-        try:
-            statesInFringe.remove(currentNodePosition)
-        except:
-            pass
+        # Removing from track of states in fringe
+        statesInFringe.remove(currentNodePosition)
 
-        # print("----NEW ITERATION-----")
-        # print("Current Node", currentNodePosition)
-        # print("Current Node Saved Priority: ", currentNode[1])
-        # assert False
-
+        # Skipping to next iteration if already visited
         if currentNodePosition in visited:
             continue
+        # Otherwise appending to visited list
         else:
             visited.append(currentNodePosition)
 
+        # Breaking out of while loop if goal state
         if problem.isGoalState(currentNodePosition):
+            # Storing goal state for further processing
             finalNode = currentNodePosition
             break
+        # Otherwise processing neighbours into fringe
         else:
 
+            # For all neighbours of the current node
             for neighbour in problem.getSuccessors(currentNodePosition):
-                # print(neighbour)
-                neighbourState = neighbour[0]
-
+                neighbourPosition = neighbour[0]
+                edgeInfo = neighbour[1]
                 neighbourCostAddition = neighbour[2]
-                # print("Edge Cost : ", neighbourCostAddition)
-                # print("Current Node Cost", currentNodeCost)
-                gValue = currentNodeCost + neighbourCostAddition
-                hValue = heuristic(neighbourState, problem)
-                h[neighbourState] = hValue
-                # print("H Value:", h[neighbourState])
-                if neighbourState not in visited and neighbourState not in statesInFringe:
-                    # print("Newly Added")
-                    g[neighbourState] = gValue
-                    # print("New g Value", g[neighbourState])
-                    fringe.push(item = neighbourState)
-                    statesInFringe.append(neighbourState)
-                    parentDict[neighbourState] = (currentNodePosition, neighbour[1])
-                elif neighbourState in statesInFringe:
-                    # print("Trying to modify")
-                    if gValue <= g[neighbourState]:
-                        g[neighbourState] = gValue
-                        fringe.push(item = neighbourState)
-                        # print("Modified with new g value as ", g[neighbourState])
-                        parentDict[neighbourState] = (currentNodePosition, neighbour[1])
 
-    # print(parentDict)
+                # Calculating h value of neighbour node
+                gValue = currentNodeCost + neighbourCostAddition
+                hValue = heuristic(neighbourPosition, problem)
+
+                # Storing h value of a state which never changes
+                h[neighbourPosition] = hValue
+
+                # Adding neighbour node not if visited and not in fringe
+                if neighbourPosition not in visited and neighbourPosition not in statesInFringe:
+                    # Storing g value of neighbour node
+                    g[neighbourPosition] = gValue
+
+                    # Pushing node in appropriate places
+                    fringe.push(item = neighbourPosition)
+                    statesInFringe.append(neighbourPosition)
+                    # Saving parent node for backtracking info
+                    parentDict[neighbourPosition] = (currentNodePosition, edgeInfo)
+
+                # Otherwise if the neighbour node is already in the fringe
+                elif neighbourPosition in statesInFringe:
+
+                    # Updating the values if new g value is better (smaller) than old value
+                    if gValue < g[neighbourPosition]:
+                        # Storing new g value in dict
+                        g[neighbourPosition] = gValue
+
+                        # Storing node in fringe again because this time it gets
+                        # stored with a new value instead of the old value in
+                        # the current fringe so that this gets more priority
+                        # and eliminates the chances of the older value to pop
+                        # once this is popped, which happens earlier
+                        fringe.push(item = neighbourPosition)
+                        statesInFringe.append(neighbourPosition)
+                        parentDict[neighbourPosition] = (currentNodePosition, edgeInfo)
+
+    # Returning empty path if no final state is found
     if finalNode == None:
         return []
+    # Else backtracking the path found till final node
     else:
-        # print("Final Node : ", finalNode)
+        # Temporary node to store backtracking iteration data
+        # Getting parent of final node
         tempNode = parentDict[finalNode]
-        # print("First Temp Node Print : ", tempNode)
+        # Storing into backtrack edge into path
         path.append(tempNode[1])
         while True:
-            # print("Again Temp Node Print : ", tempNode)
-            if tempNode[0] == startState:
+            tempNodePosition = tempNode[0]
+            # Breaking if start state reached
+            if tempNodePosition == startState:
                 break
-            parentNode = parentDict[tempNode[0]]
+            # Updating temporary node to be its parent
+            parentNode = parentDict[tempNodePosition]
+            backtrackEdgeInfo = parentNode[1]
             tempNode = parentNode
-            path.append(tempNode[1])
+            # Storing backtrack edge info
+            path.append(backtrackEdgeInfo)
 
+        # Reversing to get the backtracked path from start to final node
         path.reverse()
 
+    # Returning path
     return path
 
 
